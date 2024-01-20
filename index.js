@@ -1,5 +1,6 @@
 require("dotenv").config();
-const { Client, GatewayIntentBits, ActivityType } = require("discord.js");
+const axios = require("axios");
+const { Client, GatewayIntentBits, EmbedBuilder } = require("discord.js");
 
 const client = new Client({
   intents: [
@@ -32,13 +33,6 @@ client.once("ready", () => {
     }, midnight - now);
   }, 24 * 60 * 60 * 1000); // 24시간 주기로 실행
 });
-
-function getTimeUntilMidnight() {
-  const now = new Date();
-  const midnight = new Date(now);
-  midnight.setHours(24, 0, 0, 0); // 다음날 00:00:00
-  return midnight - now;
-}
 
 async function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -116,6 +110,39 @@ client.on("interactionCreate", async (interaction) => {
     await interaction.reply("청소 시작!");
     await getRolesForAllMembers(channel);
   }
+
+  if (interaction.commandName === "전적") {
+    const summonerName = interaction.options.getString("소환사명");
+    await interaction.reply({
+      content: `"**${summonerName}**"의 전적을 조회합니다.`,
+    });
+    const summonerData = await searchSummoner(summonerName);
+    const summonerEmbed = new EmbedBuilder()
+      .setColor(0x0099ff)
+      .setTitle(`소환사명: ${summonerName}`)
+      .addFields({
+        name: "소환사 레벨",
+        value: `${summonerData.summonerLevel}`,
+        inline: true,
+      })
+      .setTimestamp()
+      .setFooter({
+        text: "League of Leagend",
+      });
+
+    channel.send({ embeds: [summonerEmbed] });
+  }
 });
+
+async function searchSummoner(summonerName) {
+  try {
+    const response = await axios.get(
+      `https://kr.api.riotgames.com/lol/summoner/v4/summoners/by-name/${summonerName}?api_key=${process.env.API_KEY}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("API 요청 중 에러:", error);
+  }
+}
 
 client.login(process.env.TOKEN);
