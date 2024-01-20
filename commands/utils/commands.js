@@ -6,6 +6,10 @@ const commands = [
     name: "ping",
     description: "Replies with Pong!",
   },
+  {
+    name: "청소",
+    description: "불법 체류자들을 추방합니다!",
+  },
 ];
 
 const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
@@ -15,7 +19,10 @@ const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
     console.log("명령어를 등록하고 있습니다.");
 
     await rest.put(
-      Routes.applicationCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
+      Routes.applicationGuildCommands(
+        process.env.CLIENT_ID,
+        process.env.GUILD_ID
+      ),
       { body: commands }
     );
 
