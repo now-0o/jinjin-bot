@@ -14,9 +14,7 @@ client.once("ready", () => {
 
   client.user.setActivity("고구마 앞뒤 안가리고 먹는 중");
 
-  // 원하는 채널 ID를 여기에 넣어주세요
-  const channelId = "1197860083250507799";
-  const channel = client.channels.cache.get(channelId);
+  const channel = client.channels.cache.get(process.env.CHANNEL_ID);
 
   if (channel) {
     channel.send("진진봇 가동. 준비완료.");
@@ -31,8 +29,8 @@ client.once("ready", () => {
 
     setTimeout(() => {
       getRolesForAllMembers(channel); // channel을 전달
-    }, timeUntilMidnight);
-  }, getTimeUntilMidnight()); // 24시간 주기로 실행
+    }, midnight - now);
+  }, 24 * 60 * 60 * 1000); // 24시간 주기로 실행
 });
 
 function getTimeUntilMidnight() {
@@ -47,8 +45,6 @@ async function sleep(ms) {
 }
 
 async function getRolesForAllMembers(channel) {
-  channel.send(`00시가 되어 불법체류자 청소기를 가동합니다....`);
-
   const message = await channel.send("청소중.. -");
 
   await sleep(100);
@@ -108,10 +104,17 @@ async function getRolesForAllMembers(channel) {
 }
 
 client.on("interactionCreate", async (interaction) => {
+  const channel = client.channels.cache.get(process.env.CHANNEL_ID);
+
   if (!interaction.isChatInputCommand()) return;
 
   if (interaction.commandName === "ping") {
     await interaction.reply("Pong!");
+  }
+
+  if (interaction.commandName === "청소") {
+    await interaction.reply("청소 시작!");
+    await getRolesForAllMembers(channel);
   }
 });
 
