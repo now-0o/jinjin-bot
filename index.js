@@ -123,21 +123,28 @@ client.on("interactionCreate", async (interaction) => {
     await interaction.reply({
       content: `"**${summonerName}**"의 전적을 조회합니다.`,
     });
-    const summonerData = await searchSummoner(summonerName);
-    const summonerEmbed = new EmbedBuilder()
-      .setColor(0x0099ff)
-      .setTitle(`소환사명: ${summonerName}`)
-      .addFields({
-        name: "소환사 레벨",
-        value: `${summonerData.summonerLevel}`,
-        inline: true,
-      })
-      .setTimestamp()
-      .setFooter({
-        text: "League of Leagend",
-      });
 
-    channel.send({ embeds: [summonerEmbed] });
+    try {
+      const summonerData = await searchSummoner(summonerName);
+
+      const summonerEmbed = new EmbedBuilder()
+        .setColor(0x0099ff)
+        .setTitle(`소환사명: ${summonerName}`)
+        .addFields({
+          name: "소환사 정보",
+          value: `\`소환사 레벨\`: ${summonerData.level}\n\`솔로랭크\` : ${summonerData.soloRank} [승: ${summonerData.soloWins}/패: ${summonerData.soloLoses}] ${summonerData.soloRate} \n\`자유랭크\` : ${summonerData.flexRank} [승: ${summonerData.flexWins}/패: ${summonerData.flexLoses}] ${summonerData.flexRate}`,
+          inline: true,
+        })
+        .setTimestamp()
+        .setFooter({
+          text: "League of Legends",
+        });
+
+      channel.send({ embeds: [summonerEmbed] });
+    } catch (error) {
+      console.error("전적 조회 중 에러:", error);
+      await interaction.followUp("전적 조회 중 에러가 발생했습니다.");
+    }
   }
 });
 
@@ -146,9 +153,59 @@ async function searchSummoner(summonerName) {
     const response = await axios.get(
       `https://kr.api.riotgames.com/lol/summoner/v4/summoners/by-name/${summonerName}?api_key=${process.env.API_KEY}`
     );
-    return response.data;
+
+    if (response.status === 200) {
+      const summonerData = {
+        level: response.data.summonerLevel,
+      };
+
+      const secondResponse = await axios.get(
+        `https://kr.api.riotgames.com/lol/league/v4/entries/by-summoner/${response.data.id}?api_key=${process.env.API_KEY}`
+      );
+
+      if (secondResponse.status === 200) {
+        // 두 번째 요청 성공 시의 로직 작성
+        summonerData.soloRank =
+          secondResponse.data[0].tier.substring(0, 1) +
+          " " +
+          secondResponse.data[0].rank +
+          " " +
+          secondResponse.data[0].leaguePoints;
+        summonerData.soloWins = secondResponse.data[0].wins;
+        summonerData.soloLoses = secondResponse.data[0].losses;
+        summonerData.soloRate =
+          Math.round(
+            (secondResponse.data[0].wins /
+              (secondResponse.data[0].wins + secondResponse.data[0].losses)) *
+              100
+          ) + "%";
+        summonerData.flexRank =
+          secondResponse.data[1].tier.substring(0, 1) +
+          " " +
+          secondResponse.data[1].rank +
+          " " +
+          secondResponse.data[1].leaguePoints;
+        summonerData.flexWins = secondResponse.data[1].wins;
+        summonerData.flexLoses = secondResponse.data[1].losses;
+        summonerData.flexRate =
+          Math.round(
+            (secondResponse.data[1].wins /
+              (secondResponse.data[1].wins + secondResponse.data[1].losses)) *
+              100
+          ) + "%";
+      } else {
+        throw new Error(
+          `Second request failed - Status code: ${secondResponse.status}`
+        );
+      }
+
+      return summonerData;
+    } else {
+      throw new Error(`API 요청 실패 - 상태 코드: ${response.status}`);
+    }
   } catch (error) {
     console.error("API 요청 중 에러:", error);
+    throw error;
   }
 }
 
