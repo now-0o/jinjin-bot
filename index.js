@@ -107,8 +107,15 @@ client.on("interactionCreate", async (interaction) => {
   }
 
   if (interaction.commandName === "청소") {
-    await interaction.reply("청소 시작!");
-    await getRolesForAllMembers(channel);
+    const member = interaction.member;
+    const isAdmin = member.permissions.has("ADMINISTRATOR");
+
+    if (isAdmin) {
+      await interaction.reply("청소 시작!");
+      await getRolesForAllMembers(channel);
+    } else {
+      await interaction.reply("권한이 없습니다.");
+    }
   }
 
   if (interaction.commandName === "전적") {
