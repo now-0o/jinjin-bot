@@ -127,12 +127,24 @@ client.on("interactionCreate", async (interaction) => {
     try {
       const summonerData = await searchSummoner(summonerName);
 
+      let rankValue = `\`소환사 레벨\`: ${summonerData.level}\n\`솔로랭크\` : ${summonerData.soloRank} [승: ${summonerData.soloWins}/패: ${summonerData.soloLoses}] ${summonerData.soloRate} \n\`자유랭크\` : ${summonerData.flexRank} [승: ${summonerData.flexWins}/패: ${summonerData.flexLoses}] ${summonerData.flexRate}`;
+      if (!summonerData.haveSoloRank && !summonerData.haveFlexRank) {
+        rankValue = `\`소환사 레벨\`: ${summonerData.level}\n\`솔로랭크\` : ${summonerData.soloRank} \n\`자유랭크\` : ${summonerData.flexRank}`;
+      } else if (!summonerData.haveSoloRank) {
+        rankValue = `\`소환사 레벨\`: ${summonerData.level}\n\`솔로랭크\` : ${summonerData.soloRank} \n\`자유랭크\` : ${summonerData.flexRank} [승: ${summonerData.flexWins}/패: ${summonerData.flexLoses}] ${summonerData.flexRate}`;
+      } else if (!summonerData.haveFlexRank) {
+        rankValue = `\`소환사 레벨\`: ${summonerData.level}\n\`솔로랭크\` : ${summonerData.soloRank} [승: ${summonerData.soloWins}/패: ${summonerData.soloLoses}] ${summonerData.soloRate} \n\`자유랭크\` : ${summonerData.flexRank}`;
+      }
+
       const summonerEmbed = new EmbedBuilder()
         .setColor(0x0099ff)
         .setTitle(`소환사명: ${summonerName}`)
+        .setThumbnail(
+          `https://ddragon.leagueoflegends.com/cdn/10.11.1/img/profileicon/${summonerData.profileIconId}.png`
+        )
         .addFields({
           name: "소환사 정보",
-          value: `\`소환사 레벨\`: ${summonerData.level}\n\`솔로랭크\` : ${summonerData.soloRank} [승: ${summonerData.soloWins}/패: ${summonerData.soloLoses}] ${summonerData.soloRate} \n\`자유랭크\` : ${summonerData.flexRank} [승: ${summonerData.flexWins}/패: ${summonerData.flexLoses}] ${summonerData.flexRate}`,
+          value: rankValue,
           inline: true,
         })
         .setTimestamp()
@@ -159,40 +171,59 @@ async function searchSummoner(summonerName) {
         level: response.data.summonerLevel,
       };
 
+      summonerData.profileIconId = response.data.profileIconId;
       const secondResponse = await axios.get(
         `https://kr.api.riotgames.com/lol/league/v4/entries/by-summoner/${response.data.id}?api_key=${process.env.API_KEY}`
       );
 
       if (secondResponse.status === 200) {
-        // 두 번째 요청 성공 시의 로직 작성
-        summonerData.soloRank =
-          secondResponse.data[0].tier.substring(0, 1) +
-          " " +
-          secondResponse.data[0].rank +
-          " " +
-          secondResponse.data[0].leaguePoints;
-        summonerData.soloWins = secondResponse.data[0].wins;
-        summonerData.soloLoses = secondResponse.data[0].losses;
-        summonerData.soloRate =
-          Math.round(
-            (secondResponse.data[0].wins /
-              (secondResponse.data[0].wins + secondResponse.data[0].losses)) *
-              100
-          ) + "%";
-        summonerData.flexRank =
-          secondResponse.data[1].tier.substring(0, 1) +
-          " " +
-          secondResponse.data[1].rank +
-          " " +
-          secondResponse.data[1].leaguePoints;
-        summonerData.flexWins = secondResponse.data[1].wins;
-        summonerData.flexLoses = secondResponse.data[1].losses;
-        summonerData.flexRate =
-          Math.round(
-            (secondResponse.data[1].wins /
-              (secondResponse.data[1].wins + secondResponse.data[1].losses)) *
-              100
-          ) + "%";
+        const soloGameData = secondResponse.data.find(
+          (secondData) => secondData.queueType === "RANKED_SOLO_5x5"
+        );
+
+        const flexGameData = secondResponse.data.find(
+          (secondData) => secondData.queueType === "RANKED_FLEX_SR"
+        );
+
+        if (soloGameData) {
+          summonerData.soloRank =
+            soloGameData.tier.substring(0, 1) +
+            " " +
+            soloGameData.rank +
+            " " +
+            soloGameData.leaguePoints;
+          summonerData.soloWins = soloGameData.wins;
+          summonerData.soloLoses = soloGameData.losses;
+          summonerData.soloRate =
+            Math.round(
+              (soloGameData.wins / (soloGameData.wins + soloGameData.losses)) *
+                100
+            ) + "%";
+          summonerData.haveSoloRank = true;
+        } else {
+          summonerData.soloRank = "솔랭 전적이 없어요.";
+          summonerData.haveSoloRank = false;
+        }
+
+        if (flexGameData) {
+          summonerData.flexRank =
+            flexGameData.tier.substring(0, 1) +
+            " " +
+            flexGameData.rank +
+            " " +
+            flexGameData.leaguePoints;
+          summonerData.flexWins = flexGameData.wins;
+          summonerData.flexLoses = flexGameData.losses;
+          summonerData.flexRate =
+            Math.round(
+              (flexGameData.wins / (flexGameData.wins + flexGameData.losses)) *
+                100
+            ) + "%";
+          summonerData.haveFlexRank = true;
+        } else {
+          summonerData.flexRank = "자랭 전적이 없어요.";
+          summonerData.haveFlexRank = false;
+        }
       } else {
         throw new Error(
           `Second request failed - Status code: ${secondResponse.status}`
