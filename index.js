@@ -98,7 +98,7 @@ async function getRolesForAllMembers(channel) {
 }
 
 client.on("interactionCreate", async (interaction) => {
-  const channel = client.channels.cache.get(process.env.CHANNEL_ID);
+  const channel = client.channels.cache.get(interaction.channelId);
 
   if (!interaction.isChatInputCommand()) return;
 
