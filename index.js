@@ -158,6 +158,43 @@ client.on("interactionCreate", async (interaction) => {
       await interaction.followUp("전적 조회 중 에러가 발생했습니다.");
     }
   }
+
+  if (interaction.commandName === "전판캐리") {
+    const summonerName = interaction.options.getString("소환사명");
+    await interaction.reply({
+      content: `"**${summonerName}**"의 가장 최근 게임 캐리머신을 찾습니다.`,
+    });
+
+    try {
+      const carrierData = await searchCarrier(summonerName);
+
+      const summonerEmbed = new EmbedBuilder()
+        .setColor(0x0099ff)
+        .setTitle(`캐리머신: ${summonerName}`)
+        .setThumbnail(
+          `https://ddragon.leagueoflegends.com/cdn/10.11.1/img/champion/${carrierData.championName}.png`
+        )
+        .addFields({
+          name: "플레이정보",
+          value: `\`KDA\`: ${carrierData.kda}`,
+          inline: true,
+        })
+        .addFields({
+          name: "칭호",
+          value: "`불사신`: 가장 적은 데스를 기록했습니다.",
+          inline: true,
+        })
+        .setTimestamp()
+        .setFooter({
+          text: "League of Legends",
+        });
+
+      channel.send({ embeds: [summonerEmbed] });
+    } catch (error) {
+      console.error("전적 조회 중 에러:", error);
+      await interaction.followUp("전적 조회 중 에러가 발생했습니다.");
+    }
+  }
 });
 
 async function searchSummoner(summonerName) {
@@ -231,6 +268,62 @@ async function searchSummoner(summonerName) {
       }
 
       return summonerData;
+    } else {
+      throw new Error(`API 요청 실패 - 상태 코드: ${response.status}`);
+    }
+  } catch (error) {
+    console.error("API 요청 중 에러:", error);
+    throw error;
+  }
+}
+
+async function searchCarrier(summonerName) {
+  try {
+    const response = await axios.get(
+      `https://kr.api.riotgames.com/lol/summoner/v4/summoners/by-name/${summonerName}?api_key=${process.env.API_KEY}`
+    );
+    if (response.status === 200) {
+      const matchIdResponse = await axios.get(
+        `https://asia.api.riotgames.com/lol/match/v5/matches/by-puuid/${response.data.puuid}/ids?start=0&count=1&api_key=${process.env.API_KEY}`
+      );
+
+      if (matchIdResponse.status === 200) {
+        const finalMatchId = matchIdResponse.data[0];
+
+        const finalMatchData = await axios.get(
+          `https://asia.api.riotgames.com/lol/match/v5/matches/${finalMatchId}?api_key=${process.env.API_KEY}`
+        );
+
+        const carrierData = {};
+        if (finalMatchData.data.info.queueId === 400) {
+          carrierData.gameType = "일반";
+        } else if (finalMatchData.data.info.queueId === 420) {
+          carrierData.gameType = "솔랭";
+        } else if (finalMatchData.data.info.queueId === 430) {
+          carrierData.gameType = "일반";
+        } else if (finalMatchData.data.info.queueId === 440) {
+          carrierData.gameType = "자랭";
+        } else if (finalMatchData.data.info.queueId === 450) {
+          carrierData.gameType = "칼바람";
+        } else if (finalMatchData.data.info.queueId === 700) {
+          carrierData.gameType = "격전";
+        } else {
+          carrierData.gameType = "번외";
+        }
+
+        const searchedUserData = finalMatchData.data.info.participants.find(
+          (team) => team.riotIdGameName === summonerName
+        );
+        carrierData.championName = searchedUserData.championName;
+        carrierData.kda =
+          searchedUserData.kills +
+          "/" +
+          searchedUserData.deaths +
+          "/" +
+          searchedUserData.assists;
+
+        return carrierData;
+      }
     } else {
       throw new Error(`API 요청 실패 - 상태 코드: ${response.status}`);
     }
