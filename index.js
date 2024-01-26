@@ -120,9 +120,19 @@ client.on("interactionCreate", async (interaction) => {
 
   if (interaction.commandName === "전적") {
     const summonerName = interaction.options.getString("소환사명");
-    await interaction.reply({
-      content: `"**${summonerName}**"의 전적을 조회합니다.`,
-    });
+
+    if (checkSummonerName(summonerName)) {
+      await interaction.reply({
+        content: `"**${summonerName}**"의 전적을 조회합니다.`,
+      });
+    }
+    if (!checkSummonerName(summonerName)) {
+      await interaction.reply({
+        content: `"**${summonerName}**"는 올바르지 않은 소환사명#태그 형식입니다.`,
+      });
+
+      return;
+    }
 
     try {
       const summonerData = await searchSummoner(summonerName);
@@ -135,12 +145,14 @@ client.on("interactionCreate", async (interaction) => {
       } else if (!summonerData.haveFlexRank) {
         rankValue = `\`소환사 레벨\`: ${summonerData.level}\n\`솔로랭크\` : ${summonerData.soloRank} [승: ${summonerData.soloWins}/패: ${summonerData.soloLoses}] ${summonerData.soloRate} \n\`자유랭크\` : ${summonerData.flexRank}`;
       }
-
+      console.log(
+        `https://ddragon.leagueoflegends.com/cdn/14.2.1/img/profileicon/${summonerData.profileIconId}.png?api_key=${process.env.API_KEY}`
+      );
       const summonerEmbed = new EmbedBuilder()
         .setColor(0x0099ff)
         .setTitle(`소환사명: ${summonerName}`)
         .setThumbnail(
-          `https://ddragon.leagueoflegends.com/cdn/10.11.1/img/profileicon/${summonerData.profileIconId}.png`
+          `https://ddragon.leagueoflegends.com/cdn/14.2.1/img/profileicon/${summonerData.profileIconId}.png?api_key=${process.env.API_KEY}`
         )
         .addFields({
           name: "소환사 정보",
@@ -161,18 +173,27 @@ client.on("interactionCreate", async (interaction) => {
 
   if (interaction.commandName === "전판캐리") {
     const summonerName = interaction.options.getString("소환사명");
-    await interaction.reply({
-      content: `"**${summonerName}**"의 가장 최근 게임 캐리머신을 찾습니다.`,
-    });
+    if (checkSummonerName(summonerName)) {
+      await interaction.reply({
+        content: `"**${summonerName}**"의 가장 최근 게임 캐리머신을 찾습니다.`,
+      });
+    }
+    if (!checkSummonerName(summonerName)) {
+      await interaction.reply({
+        content: `"**${summonerName}**"는 올바르지 않은 소환사명#태그 형식입니다.`,
+      });
+
+      return;
+    }
 
     try {
       const carrierData = await searchCarrier(summonerName);
 
       const summonerEmbed = new EmbedBuilder()
         .setColor(0x0099ff)
-        .setTitle(`캐리머신: ${summonerName}`)
+        .setTitle(`캐리머신: ${carrierData.summonerName}`)
         .setThumbnail(
-          `https://ddragon.leagueoflegends.com/cdn/10.11.1/img/champion/${carrierData.championName}.png`
+          `https://ddragon.leagueoflegends.com/cdn/14.2.1/img/champion/${carrierData.championName}.png?api_key=${process.env.API_KEY}`
         )
         .addFields({
           name: "플레이정보",
@@ -200,7 +221,11 @@ client.on("interactionCreate", async (interaction) => {
 async function searchSummoner(summonerName) {
   try {
     const response = await axios.get(
-      `https://kr.api.riotgames.com/lol/summoner/v4/summoners/by-name/${summonerName}?api_key=${process.env.API_KEY}`
+      `https://asia.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${
+        summonerName.split("#")[0]
+      }/${
+        summonerName.split("#")[1]
+      }?api_key=RGAPI-c7c497f6-9280-40e7-b817-0134f9afe3c4`
     );
 
     if (response.status === 200) {
@@ -280,7 +305,11 @@ async function searchSummoner(summonerName) {
 async function searchCarrier(summonerName) {
   try {
     const response = await axios.get(
-      `https://kr.api.riotgames.com/lol/summoner/v4/summoners/by-name/${summonerName}?api_key=${process.env.API_KEY}`
+      `https://asia.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${
+        summonerName.split("#")[0]
+      }/${
+        summonerName.split("#")[1]
+      }?api_key=RGAPI-c7c497f6-9280-40e7-b817-0134f9afe3c4`
     );
     if (response.status === 200) {
       const matchIdResponse = await axios.get(
@@ -294,35 +323,66 @@ async function searchCarrier(summonerName) {
           `https://asia.api.riotgames.com/lol/match/v5/matches/${finalMatchId}?api_key=${process.env.API_KEY}`
         );
 
-        const carrierData = {};
+        let gameType;
         if (finalMatchData.data.info.queueId === 400) {
-          carrierData.gameType = "일반";
+          gameType = "일반";
         } else if (finalMatchData.data.info.queueId === 420) {
-          carrierData.gameType = "솔랭";
+          gameType = "솔랭";
         } else if (finalMatchData.data.info.queueId === 430) {
-          carrierData.gameType = "일반";
+          gameType = "일반";
         } else if (finalMatchData.data.info.queueId === 440) {
-          carrierData.gameType = "자랭";
+          gameType = "자랭";
         } else if (finalMatchData.data.info.queueId === 450) {
-          carrierData.gameType = "칼바람";
+          gameType = "칼바람";
         } else if (finalMatchData.data.info.queueId === 700) {
-          carrierData.gameType = "격전";
+          gameType = "격전";
         } else {
-          carrierData.gameType = "번외";
+          gameType = "번외";
+        }
+        const searchedUserTeam = finalMatchData.data.info.participants.find(
+          (player) =>
+            player.riotIdGameName.split(" ").join("") ===
+            summonerName.split("#")[0].split(" ").join("")
+        ).teamId;
+
+        const searchedUserTeamPlayersData =
+          finalMatchData.data.info.participants.filter(
+            (player) => player.teamId === searchedUserTeam
+          );
+
+        const calcScoreWithPlayerDataArry = [];
+
+        for (let player of searchedUserTeamPlayersData) {
+          const calcScoreWithPlayerData = {};
+
+          calcScoreWithPlayerData.championName = player.championName;
+          calcScoreWithPlayerData.summonerName = player.riotIdGameName;
+          calcScoreWithPlayerData.kda =
+            player.kills + "/" + player.deaths + "/" + player.assists;
+          calcScoreWithPlayerData.dealToChamp =
+            player.totalDamageDealtToChampions;
+          calcScoreWithPlayerData.dealToBuild = player.damageDealtToBuildings;
+          calcScoreWithPlayerData.gold = player.goldEarned;
+          calcScoreWithPlayerData.visionScore = player.visionScore;
+          calcScoreWithPlayerData.shield =
+            player.totalDamageShieldedOnTeammates;
+          calcScoreWithPlayerData.head = player.totalHeal;
+          calcScoreWithPlayerData.carryScore =
+            player.kills * 3 +
+            player.deaths * -3 +
+            player.assists / 4 +
+            player.totalDamageDealtToChampions / 2000 +
+            player.goldEarned / 1000 +
+            player.damageDealtToBuildings / 1000 +
+            player.totalDamageShieldedOnTeammates / 1000 +
+            player.visionScore / 5;
+          calcScoreWithPlayerDataArry.push(calcScoreWithPlayerData);
         }
 
-        const searchedUserData = finalMatchData.data.info.participants.find(
-          (team) => team.riotIdGameName === summonerName
-        );
-        carrierData.championName = searchedUserData.championName;
-        carrierData.kda =
-          searchedUserData.kills +
-          "/" +
-          searchedUserData.deaths +
-          "/" +
-          searchedUserData.assists;
-
-        return carrierData;
+        const carrierData = findcarrier(calcScoreWithPlayerDataArry);
+        carrierData.gameType = gameType;
+        console.log(searchedUserTeamPlayersData);
+        return calcScoreWithPlayerDataArry[0];
       }
     } else {
       throw new Error(`API 요청 실패 - 상태 코드: ${response.status}`);
@@ -331,6 +391,29 @@ async function searchCarrier(summonerName) {
     console.error("API 요청 중 에러:", error);
     throw error;
   }
+}
+
+const checkSummonerName = (summonerName) => {
+  if (/^.+#.+$/g.test(summonerName)) {
+    return true;
+  }
+  if (!/^.+#.+$/g.test(summonerName)) {
+    return false;
+  }
+};
+
+function findcarrier(calcScoreWithPlayerDataArry) {
+  if (calcScoreWithPlayerDataArry.length === 0) {
+    return null; // 배열이 비어있을 경우 예외처리 또는 적절한 값 반환
+  }
+
+  // 배열을 carryScore로 정렬 (내림차순)
+  calcScoreWithPlayerDataArry.sort((a, b) => b.carryScore - a.carryScore);
+
+  // 정렬된 배열에서 첫 번째 객체가 가장 높은 carryScore를 가진 객체
+  const carrierData = calcScoreWithPlayerDataArry[0];
+
+  return carrierData;
 }
 
 client.login(process.env.TOKEN);

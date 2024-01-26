@@ -16,7 +16,7 @@ const commands = [
     options: [
       {
         name: "소환사명",
-        description: "전적 검색할 소환사명을 입력하세요.",
+        description: "전적 검색할 소환사명#태그를 입력하세요.",
         type: 3, // 3은 문자열 (String) 타입을 나타냅니다.
         required: true,
       },
@@ -28,7 +28,7 @@ const commands = [
     options: [
       {
         name: "소환사명",
-        description: "최근 게임을 조회할 소환사명을 입력하세요.",
+        description: "최근 게임을 조회할 소환사명#태그를 입력하세요.",
         type: 3, // 3은 문자열 (String) 타입을 나타냅니다.
         required: true,
       },
