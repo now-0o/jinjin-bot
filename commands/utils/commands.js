@@ -12,11 +12,35 @@ const commands = [
   },
   {
     name: "전적",
-    description: "해당 유저의 최근 전적을 조회 합니다.",
+    description: "해당 유저의 최근 전적을 조회합니다.",
     options: [
       {
         name: "소환사명",
-        description: "전적 검색할 소환사명을 입력하세요.",
+        description: "전적 검색할 소환사명#태그를 입력하세요.",
+        type: 3, // 3은 문자열 (String) 타입을 나타냅니다.
+        required: true,
+      },
+    ],
+  },
+  {
+    name: "전판캐리",
+    description: "해당 유저의 가장 최근 게임을 누가 캐리했는지 계산합니다.",
+    options: [
+      {
+        name: "소환사명",
+        description: "최근 게임을 조회할 소환사명#태그를 입력하세요.",
+        type: 3, // 3은 문자열 (String) 타입을 나타냅니다.
+        required: true,
+      },
+    ],
+  },
+  {
+    name: "전판트롤",
+    description: "해당 유저의 가장 최근 게임을 누가 트롤했는지 계산합니다.",
+    options: [
+      {
+        name: "소환사명",
+        description: "최근 게임을 조회할 소환사명#태그를 입력하세요.",
         type: 3, // 3은 문자열 (String) 타입을 나타냅니다.
         required: true,
       },
