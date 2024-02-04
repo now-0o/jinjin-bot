@@ -309,6 +309,7 @@ async function searchTroler(summonerName) {
       searchedUserTeamPlayersData
     );
     const trolerData = findTroler(calcScoreWithPlayerDataArry);
+
     trolerData.gameType = gameType;
     return trolerData;
   } catch (error) {
