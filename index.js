@@ -14,6 +14,7 @@ const {
   findCarrier,
   findTroler,
 } = require("./commands/utils/relatedSummonerData");
+const { setCommand } = require("./commands/utils/commands");
 const { Client, GatewayIntentBits, EmbedBuilder } = require("discord.js");
 
 const client = new Client({
@@ -45,6 +46,18 @@ client.once("ready", () => {
       getRolesForAllMembers(channel); // channel을 전달
     }, midnight - now);
   }, 24 * 60 * 60 * 1000); // 24시간 주기로 실행
+});
+
+client.on("guildCreate", (guild) => {
+  const guildId = guild.id;
+  checkCommands(guildId);
+  const defaultTextChannel = guild.channels.cache.find(
+    (channel) => channel.type === "GUILD_TEXT"
+  );
+
+  if (!defaultTextChannel) {
+    console.log(`메인 대화 채널을 찾지 못했습니다.`);
+  }
 });
 
 async function sleep(ms) {
@@ -339,6 +352,21 @@ async function sendCleaning(message) {
 
   await sleep(100);
   await message.edit("청소중.. /");
+}
+
+function checkCommands(guildId) {
+  const guild = client.guilds.cache.get(guildId);
+  if (guild) {
+    guild.commands
+      .fetch()
+      .then((commands) => {
+        // /A 명령어가 등록되어 있지 않다면 setCommand 함수 실행
+        if (!commands.some((command) => command.name === "전적")) {
+          setCommand(guildId);
+        }
+      })
+      .catch(console.error);
+  }
 }
 
 client.login(process.env.TOKEN);
