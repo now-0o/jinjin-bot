@@ -77,14 +77,25 @@ function checkSummonerName(summonerName) {
   }
 }
 
+// function findCarrier(calcScoreWithPlayerDataArry) {
+//   if (calcScoreWithPlayerDataArry.length === 0) {
+//     return null;
+//   }
+
+//   calcScoreWithPlayerDataArry.sort((a, b) => b.carryScore - a.carryScore);
+//   return calcScoreWithPlayerDataArry;
+// }
+
 function findCarrier(calcScoreWithPlayerDataArry) {
   if (calcScoreWithPlayerDataArry.length === 0) {
     return null;
   }
-
+  console.log(calcScoreWithPlayerDataArry);
   calcScoreWithPlayerDataArry.sort((a, b) => b.carryScore - a.carryScore);
 
-  return setCarryTag(calcScoreWithPlayerDataArry);
+  const carrierData = calcScoreWithPlayerDataArry[0];
+
+  return carrierData;
 }
 
 function findTroler(calcScoreWithPlayerDataArry) {

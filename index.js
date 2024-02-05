@@ -14,6 +14,7 @@ const {
   findCarrier,
   findTroler,
 } = require("./commands/utils/relatedSummonerData");
+const { setCommand } = require("./commands/utils/commands");
 const { Client, GatewayIntentBits, EmbedBuilder } = require("discord.js");
 
 const client = new Client({
@@ -47,44 +48,55 @@ client.once("ready", () => {
   }, 24 * 60 * 60 * 1000); // 24시간 주기로 실행
 });
 
+client.on("guildCreate", async (guild) => {
+  const guildId = guild.id;
+  checkCommands(guildId);
+  const defaultChannelId = guild.channels.cache.find(
+    (channel) => channel.type === 4
+  ).guild.systemChannelId;
+
+  const defaultChannel = client.channels.cache.get(defaultChannelId);
+});
+
 async function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function getRolesForAllMembers(channel) {
+async function getRolesForAllMembers(guild, channel) {
   const message = await channel.send("청소중.. -");
-  await sendCleaning(message);
-  client.guilds.cache.forEach(async (guild) => {
-    try {
-      const members = await guild.members.fetch(); // 모든 멤버 정보를 불러오기
-      let kickMemberCount = 0;
+  await sendLoading(message, "청소중..");
 
-      for (const member of members.values()) {
-        const roles = Array.from(member.roles.cache.values());
-        const otherRoles = roles.filter((role) => role.name !== "@everyone");
-        if (otherRoles.length === 0) {
-          console.log(
-            `${member.user.tag} 멤버는 @everyone 이외의 역할을 가지고 있지 않습니다.`
-          );
+  try {
+    const members = await guild.members.fetch(); // 해당 서버의 모든 멤버 정보를 불러오기
+    let kickMemberCount = 0;
 
-          try {
-            await member.kick();
-            kickMemberCount++;
-          } catch (error) {
-            console.error("추방 중 에러 발생:", error);
-          }
+    for (const member of members.values()) {
+      const roles = Array.from(member.roles.cache.values());
+      const otherRoles = roles.filter((role) => role.name !== "@everyone");
+      if (otherRoles.length === 0) {
+        console.log(
+          `${member.user.tag} 멤버는 @everyone 이외의 역할을 가지고 있지 않습니다.`
+        );
+
+        try {
+          await member.kick();
+          kickMemberCount++;
+        } catch (error) {
+          console.error("추방 중 에러 발생:", error);
         }
       }
-
-      message.edit(`총 ${kickMemberCount}명의 불법체류자를 추방했습니다.`);
-    } catch (error) {
-      console.error("멤버 정보 불러오기 중 에러 발생:", error);
     }
-  });
+
+    message.edit(`총 ${kickMemberCount}명의 불법체류자를 추방했습니다.`);
+  } catch (error) {
+    console.error("멤버 정보 불러오기 중 에러 발생:", error);
+  }
 }
 
 client.on("interactionCreate", async (interaction) => {
   const channel = client.channels.cache.get(interaction.channelId);
+
+  const { commandName, options, guildId, channelId, member } = interaction;
 
   if (!interaction.isChatInputCommand()) return;
 
@@ -92,13 +104,19 @@ client.on("interactionCreate", async (interaction) => {
     await interaction.reply("Pong!");
   }
 
-  if (interaction.commandName === "청소") {
-    const member = interaction.member;
+  if (commandName === "청소") {
     const isAdmin = member.permissions.has("ADMINISTRATOR");
 
     if (isAdmin) {
-      await interaction.reply("청소 시작!");
-      await getRolesForAllMembers(channel);
+      const channel = client.channels.cache.get(channelId);
+      const guild = client.guilds.cache.get(guildId);
+
+      if (channel && guild) {
+        await interaction.reply("청소 시작!");
+        await getRolesForAllMembers(guild, channel);
+      } else {
+        await interaction.reply("서버 정보를 가져오는 중 오류가 발생했습니다.");
+      }
     } else {
       await interaction.reply("권한이 없습니다.");
     }
@@ -318,27 +336,42 @@ async function searchTroler(summonerName) {
   }
 }
 
-async function sendCleaning(message) {
+async function sendLoading(message, ment) {
   await sleep(100);
-  await message.edit("청소중.. \\");
+  await message.edit(`${ment} \\`);
 
   await sleep(100);
-  await message.edit("청소중.. |");
+  await message.edit(`${ment} |`);
 
   await sleep(100);
-  await message.edit("청소중.. /");
+  await message.edit(`${ment} /`);
 
   await sleep(100);
-  await message.edit("청소중.. -");
+  await message.edit(`${ment} -`);
 
   await sleep(100);
-  await message.edit("청소중.. \\");
+  await message.edit(`${ment} \\`);
 
   await sleep(100);
-  await message.edit("청소중.. |");
+  await message.edit(`${ment} |`);
 
   await sleep(100);
-  await message.edit("청소중.. /");
+  await message.edit(`${ment} /`);
+}
+
+function checkCommands(guildId) {
+  const guild = client.guilds.cache.get(guildId);
+  if (guild) {
+    guild.commands
+      .fetch()
+      .then((commands) => {
+        // /A 명령어가 등록되어 있지 않다면 setCommand 함수 실행
+        if (!commands.some((command) => command.name === "전적")) {
+          setCommand(guildId);
+        }
+      })
+      .catch(console.error);
+  }
 }
 
 client.login(process.env.TOKEN);
