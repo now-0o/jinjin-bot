@@ -43,6 +43,10 @@ async function setCommand(guildId) {
         },
       ],
     },
+    {
+      name: "레벨갱신",
+      description: "유저 별명의 날짜 칭호를 갱신합니다.",
+    },
   ];
 
   const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);

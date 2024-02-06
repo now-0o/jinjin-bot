@@ -25,7 +25,7 @@ const client = new Client({
   ],
 });
 
-client.once("ready", () => {
+client.once("ready", async () => {
   console.log(`Logged in as ${client.user.tag}`);
   client.user.setActivity("고구마 앞뒤 안가리고 먹는 중");
 
@@ -264,6 +264,21 @@ client.on("interactionCreate", async (interaction) => {
       await interaction.followUp("전적 조회 중 에러가 발생했습니다.");
     }
   }
+
+  if (commandName === "레벨갱신") {
+    const isAdmin = member.permissions.has("ADMINISTRATOR");
+
+    if (isAdmin) {
+      const channel = client.channels.cache.get(channelId);
+      const guild = client.guilds.cache.get(guildId);
+
+      await setNickNameLevels(guild);
+
+      await interaction.reply("레벨갱신을 완료했습니다.");
+    } else {
+      await interaction.reply("권한이 없습니다.");
+    }
+  }
 });
 
 async function searchSummoner(summonerName) {
@@ -371,6 +386,39 @@ function checkCommands(guildId) {
         }
       })
       .catch(console.error);
+  }
+}
+
+async function setNickNameLevels(guild) {
+  try {
+    client.guilds.cache.forEach(async () => {
+      const members = await guild.members.fetch();
+
+      members.forEach(async (member) => {
+        try {
+          const joinDate = member.joinedAt; // 또는 user.createdAt
+
+          const currentDate = new Date();
+
+          const daysInServer = Math.floor(
+            (currentDate - joinDate) / (1000 * 60 * 60 * 24)
+          );
+          if (
+            member.user.id !== "1203595904716636210" &&
+            member.user.id !== "345442010385088523" &&
+            member.user.id !== "501053366521167872"
+          ) {
+            await member.setNickname(
+              `${member.user.globalName} [${daysInServer}일]`
+            );
+          }
+        } catch (error) {
+          console.error("별명 변경 중 에러 발생:", error);
+        }
+      });
+    });
+  } catch (error) {
+    console.error("서버 및 멤버 정보 불러오기 중 에러 발생:", error);
   }
 }
 
