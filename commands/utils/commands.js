@@ -47,6 +47,26 @@ async function setCommand(guildId) {
       name: "레벨갱신",
       description: "유저 별명의 날짜 칭호를 갱신합니다.",
     },
+    {
+      name: "매칭기록",
+      description: "두 소환사가 최근 20게임 내 매칭 기록이 있는지 조회합니다.",
+      options: [
+        {
+          name: "기준_소환사명",
+          description:
+            "이 소환사의 최근 20게임 기준으로 매칭여부를 조회합니다.",
+          type: 3,
+          required: true,
+        },
+        {
+          name: "대상_소환사명",
+          description:
+            "이 소환사가 기준 소환사와 매칭된 기록이 있는지 조회합니다.",
+          type: 3,
+          required: true,
+        },
+      ],
+    },
   ];
 
   const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
