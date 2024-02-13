@@ -125,11 +125,6 @@ client.on("interactionCreate", async (interaction) => {
   if (interaction.commandName === "전적") {
     const summonerName = interaction.options.getString("소환사명");
 
-    if (checkSummonerName(summonerName)) {
-      await interaction.reply({
-        content: `"**${summonerName}**"의 전적을 조회합니다.`,
-      });
-    }
     if (!checkSummonerName(summonerName)) {
       await interaction.reply({
         content: `"**${summonerName}**"는 올바르지 않은 소환사명#태그 형식입니다.`,
@@ -137,6 +132,10 @@ client.on("interactionCreate", async (interaction) => {
 
       return;
     }
+
+    await interaction.reply({
+      content: `"**${summonerName}**"의 전적을 조회합니다.`,
+    });
 
     try {
       const summonerData = await searchSummoner(summonerName);
@@ -175,11 +174,7 @@ client.on("interactionCreate", async (interaction) => {
 
   if (interaction.commandName === "전판캐리") {
     const summonerName = interaction.options.getString("소환사명");
-    if (checkSummonerName(summonerName)) {
-      await interaction.reply({
-        content: `"**${summonerName}**"의 가장 최근 게임 캐리머신을 찾습니다.`,
-      });
-    }
+
     if (!checkSummonerName(summonerName)) {
       await interaction.reply({
         content: `"**${summonerName}**"는 올바르지 않은 소환사명#태그 형식입니다.`,
@@ -187,6 +182,13 @@ client.on("interactionCreate", async (interaction) => {
 
       return;
     }
+
+    await interaction.reply({
+      content: `"**${summonerName}**"의 가장 최근 게임 캐리머신을 찾습니다.`,
+    });
+
+    // 1초에 20회 / 2분에 100회
+    // ->
 
     try {
       const carrierData = await searchCarrier(summonerName);
@@ -221,11 +223,7 @@ client.on("interactionCreate", async (interaction) => {
 
   if (interaction.commandName === "전판트롤") {
     const summonerName = interaction.options.getString("소환사명");
-    if (checkSummonerName(summonerName)) {
-      await interaction.reply({
-        content: `"**${summonerName}**"의 가장 최근 게임 트롤러를 찾습니다.`,
-      });
-    }
+
     if (!checkSummonerName(summonerName)) {
       await interaction.reply({
         content: `"**${summonerName}**"는 올바르지 않은 소환사명#태그 형식입니다.`,
@@ -233,6 +231,10 @@ client.on("interactionCreate", async (interaction) => {
 
       return;
     }
+
+    await interaction.reply({
+      content: `"**${summonerName}**"의 가장 최근 게임 트롤러를 찾습니다.`,
+    });
 
     try {
       const carrierData = await searchTroler(summonerName);
@@ -278,6 +280,9 @@ client.on("interactionCreate", async (interaction) => {
     } else {
       await interaction.reply("권한이 없습니다.");
     }
+  }
+
+  if (commandName === "매칭기록") {
   }
 });
 

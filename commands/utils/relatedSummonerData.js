@@ -90,7 +90,7 @@ function findCarrier(calcScoreWithPlayerDataArry) {
   if (calcScoreWithPlayerDataArry.length === 0) {
     return null;
   }
-  console.log(calcScoreWithPlayerDataArry);
+  //console.log(calcScoreWithPlayerDataArry);
   calcScoreWithPlayerDataArry.sort((a, b) => b.carryScore - a.carryScore);
 
   const carrierData = calcScoreWithPlayerDataArry[0];
@@ -102,7 +102,7 @@ function findTroler(calcScoreWithPlayerDataArry) {
   if (calcScoreWithPlayerDataArry.length === 0) {
     return null;
   }
-  console.log(calcScoreWithPlayerDataArry);
+  //console.log(calcScoreWithPlayerDataArry);
   calcScoreWithPlayerDataArry.sort((a, b) => b.carryScore - a.carryScore);
 
   const carrierData =
