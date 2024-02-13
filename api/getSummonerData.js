@@ -30,6 +30,7 @@ async function getSummonerProfileIconAndRank(puuid) {
     if (sub_response.status === 200) {
       const summonerData = {
         profileIconId: sub_response.data.profileIconId,
+        summonerLevel: sub_response.data.summonerLevel,
       };
 
       const secondResponse = await axios.get(

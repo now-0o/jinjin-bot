@@ -77,40 +77,6 @@ function checkSummonerName(summonerName) {
   }
 }
 
-// function findCarrier(calcScoreWithPlayerDataArry) {
-//   if (calcScoreWithPlayerDataArry.length === 0) {
-//     return null;
-//   }
-
-//   calcScoreWithPlayerDataArry.sort((a, b) => b.carryScore - a.carryScore);
-//   return calcScoreWithPlayerDataArry;
-// }
-
-function findCarrier(calcScoreWithPlayerDataArry) {
-  if (calcScoreWithPlayerDataArry.length === 0) {
-    return null;
-  }
-  //console.log(calcScoreWithPlayerDataArry);
-  calcScoreWithPlayerDataArry.sort((a, b) => b.carryScore - a.carryScore);
-
-  const carrierData = calcScoreWithPlayerDataArry[0];
-
-  return carrierData;
-}
-
-function findTroler(calcScoreWithPlayerDataArry) {
-  if (calcScoreWithPlayerDataArry.length === 0) {
-    return null;
-  }
-  //console.log(calcScoreWithPlayerDataArry);
-  calcScoreWithPlayerDataArry.sort((a, b) => b.carryScore - a.carryScore);
-
-  const carrierData =
-    calcScoreWithPlayerDataArry[calcScoreWithPlayerDataArry.length - 1];
-
-  return carrierData;
-}
-
 function setCarryTag(calcScoreWithPlayerDataArry) {
   let carrierObj = calcScoreWithPlayerDataArry[0];
 
@@ -158,6 +124,4 @@ module.exports = {
   PlayerDataSetArry,
   findUserTeamData,
   checkSummonerName,
-  findCarrier,
-  findTroler,
 };
