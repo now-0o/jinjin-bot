@@ -3,13 +3,13 @@ const {
   getSummonerMatchId,
   getSummonerFinalMatchData,
 } = require("../../api/getSummonerData");
-
 const {
   checkSummonerName,
   findGameMode,
   findUserTeamData,
   PlayerDataSetArry,
-} = require("../utils/relatedSummonerData");
+} = require("./relatedSummonerData");
+const { setTrolerTitle, makeTitleString } = require("./title");
 const { EmbedBuilder } = require("discord.js");
 
 async function findTrolerInLastGame(interaction, channel) {
@@ -28,22 +28,22 @@ async function findTrolerInLastGame(interaction, channel) {
   });
 
   try {
-    const carrierData = await searchTroler(summonerName);
-
+    const trolerData = await searchTroler(summonerName);
+    const titleString = makeTitleString(trolerData.title);
     const summonerEmbed = new EmbedBuilder()
       .setColor(0x0099ff)
-      .setTitle(`트롤러: ${carrierData.summonerName}`)
+      .setTitle(`트롤러: ${trolerData.summonerName}`)
       .setThumbnail(
-        `https://ddragon.leagueoflegends.com/cdn/14.2.1/img/champion/${carrierData.championName}.png?api_key=${process.env.API_KEY}`
+        `https://ddragon.leagueoflegends.com/cdn/14.3.1/img/champion/${trolerData.championName}.png?api_key=${process.env.API_KEY}`
       )
       .addFields({
         name: "플레이정보",
-        value: `\`KDA\`: ${carrierData.kda}`,
+        value: `\`KDA\`: ${trolerData.kda}`,
         inline: true,
       })
       .addFields({
         name: "칭호",
-        value: "`또죽어?`: 가장 많은 데스를 기록했습니다.",
+        value: titleString,
         inline: true,
       })
       .setTimestamp()
@@ -86,13 +86,12 @@ function findTroler(calcScoreWithPlayerDataArry) {
   if (calcScoreWithPlayerDataArry.length === 0) {
     return null;
   }
-  //console.log(calcScoreWithPlayerDataArry);
   calcScoreWithPlayerDataArry.sort((a, b) => b.carryScore - a.carryScore);
-
-  const carrierData =
+  const trolerData =
     calcScoreWithPlayerDataArry[calcScoreWithPlayerDataArry.length - 1];
+  trolerData.title = setTrolerTitle(calcScoreWithPlayerDataArry, trolerData);
 
-  return carrierData;
+  return trolerData;
 }
 
 module.exports = {

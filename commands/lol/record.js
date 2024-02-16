@@ -1,4 +1,4 @@
-const { checkSummonerName } = require("../utils/relatedSummonerData");
+const { checkSummonerName } = require("./relatedSummonerData");
 
 const {
   getRiotAccountInfo,

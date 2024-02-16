@@ -3,13 +3,13 @@ const {
   getSummonerMatchId,
   getSummonerFinalMatchData,
 } = require("../../api/getSummonerData");
-
 const {
   checkSummonerName,
   findGameMode,
   findUserTeamData,
   PlayerDataSetArry,
-} = require("../utils/relatedSummonerData");
+} = require("./relatedSummonerData");
+const { setCarryTitle, makeTitleString } = require("./title");
 const { EmbedBuilder } = require("discord.js");
 
 async function findCarrierInLastGame(interaction, channel) {
@@ -19,7 +19,6 @@ async function findCarrierInLastGame(interaction, channel) {
     await interaction.reply({
       content: `"**${summonerName}**"는 올바르지 않은 소환사명#태그 형식입니다.`,
     });
-
     return;
   }
 
@@ -29,7 +28,7 @@ async function findCarrierInLastGame(interaction, channel) {
 
   try {
     const carrierData = await searchCarrier(summonerName);
-
+    const titleString = makeTitleString(carrierData.title);
     const summonerEmbed = new EmbedBuilder()
       .setColor(0x0099ff)
       .setTitle(`캐리머신: ${carrierData.summonerName}`)
@@ -43,7 +42,7 @@ async function findCarrierInLastGame(interaction, channel) {
       })
       .addFields({
         name: "칭호",
-        value: "`불사신`: 가장 적은 데스를 기록했습니다.",
+        value: titleString,
         inline: true,
       })
       .setTimestamp()
@@ -85,11 +84,9 @@ function findCarrier(calcScoreWithPlayerDataArry) {
   if (calcScoreWithPlayerDataArry.length === 0) {
     return null;
   }
-  //console.log(calcScoreWithPlayerDataArry);
   calcScoreWithPlayerDataArry.sort((a, b) => b.carryScore - a.carryScore);
-
   const carrierData = calcScoreWithPlayerDataArry[0];
-
+  carrierData.title = setCarryTitle(calcScoreWithPlayerDataArry, carrierData);
   return carrierData;
 }
 
