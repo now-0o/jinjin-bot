@@ -35,24 +35,26 @@ function findGameMode(queueId) {
 
 function PlayerDataSetArry(searchedUserTeamPlayersData) {
   const playerDataArry = [];
-
   for (let player of searchedUserTeamPlayersData) {
     const calcScoreWithPlayerData = {};
-
-    calcScoreWithPlayerData.championName = player.championName;
+    calcScoreWithPlayerData.championName =
+      player.championName.charAt(0).toUpperCase() +
+      player.championName.slice(1).toLowerCase();
     calcScoreWithPlayerData.summonerName = player.riotIdGameName;
     calcScoreWithPlayerData.kda =
       player.kills + "/" + player.deaths + "/" + player.assists;
+    calcScoreWithPlayerData.kills = player.kills;
+    calcScoreWithPlayerData.deaths = player.deaths;
+    calcScoreWithPlayerData.assists = player.assists;
     calcScoreWithPlayerData.dealToChamp = player.totalDamageDealtToChampions;
     calcScoreWithPlayerData.dealToBuild = player.damageDealtToBuildings;
     calcScoreWithPlayerData.gold = player.goldEarned;
     calcScoreWithPlayerData.visionScore = player.visionScore;
     calcScoreWithPlayerData.shield = player.totalDamageShieldedOnTeammates;
-    calcScoreWithPlayerData.head = player.totalHeal;
+    calcScoreWithPlayerData.heal = player.totalHeal;
     calcScoreWithPlayerData.carryScore = calcCarryScore(player);
     playerDataArry.push(calcScoreWithPlayerData);
   }
-
   return playerDataArry;
 }
 
