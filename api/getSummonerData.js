@@ -26,81 +26,63 @@ async function getSummonerProfileIconAndRank(puuid) {
     const sub_response = await axios.get(
       `https://kr.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/${puuid}?api_key=${process.env.API_KEY}`
     );
-
-    if (sub_response.status === 200) {
-      const summonerData = {
-        profileIconId: sub_response.data.profileIconId,
-        summonerLevel: sub_response.data.summonerLevel,
-      };
-
-      const secondResponse = await axios.get(
-        `https://kr.api.riotgames.com/lol/league/v4/entries/by-summoner/${sub_response.data.id}?api_key=${process.env.API_KEY}`
-      );
-
-      if (secondResponse.status === 200) {
-        const soloGameData = secondResponse.data.find(
-          (secondData) => secondData.queueType === "RANKED_SOLO_5x5"
-        );
-
-        const flexGameData = secondResponse.data.find(
-          (secondData) => secondData.queueType === "RANKED_FLEX_SR"
-        );
-
-        if (soloGameData) {
-          summonerData.soloRank =
-            soloGameData.tier.substring(0, 1) +
-            " " +
-            soloGameData.rank +
-            " " +
-            soloGameData.leaguePoints;
-          summonerData.soloWins = soloGameData.wins;
-          summonerData.soloLoses = soloGameData.losses;
-          summonerData.soloRate =
-            Math.round(
-              (soloGameData.wins / (soloGameData.wins + soloGameData.losses)) *
-                100
-            ) + "%";
-          summonerData.haveSoloRank = true;
-        } else {
-          summonerData.soloRank = "솔랭 전적이 없어요.";
-          summonerData.haveSoloRank = false;
-        }
-
-        if (flexGameData) {
-          summonerData.flexRank =
-            flexGameData.tier.substring(0, 1) +
-            " " +
-            flexGameData.rank +
-            " " +
-            flexGameData.leaguePoints;
-          summonerData.flexWins = flexGameData.wins;
-          summonerData.flexLoses = flexGameData.losses;
-          summonerData.flexRate =
-            Math.round(
-              (flexGameData.wins / (flexGameData.wins + flexGameData.losses)) *
-                100
-            ) + "%";
-          summonerData.haveFlexRank = true;
-        } else {
-          summonerData.flexRank = "자랭 전적이 없어요.";
-          summonerData.haveFlexRank = false;
-        }
-
-        return summonerData;
-      } else {
-        throw new Error(
-          `Second request failed - Status code: ${secondResponse.status}`
-        );
-      }
-    } else {
+    if (sub_response.status !== 200) {
       throw new Error(
         `Sub request failed - Status code: ${sub_response.status}`
       );
     }
+    const summonerData = {
+      profileIconId: sub_response.data.profileIconId,
+      summonerLevel: sub_response.data.summonerLevel,
+    };
+    const secondResponse = await axios.get(
+      `https://kr.api.riotgames.com/lol/league/v4/entries/by-summoner/${sub_response.data.id}?api_key=${process.env.API_KEY}`
+    );
+    if (secondResponse.status !== 200) {
+      throw new Error(
+        `Second request failed - Status code: ${secondResponse.status}`
+      );
+    }
+    return makeSummonerData(summonerData, secondResponse);
   } catch (error) {
     console.error("API 요청 중 에러:", error);
     throw error;
   }
+}
+
+function setGameData(summonerData, gameData, gameType, gameName) {
+  if (!gameData) {
+    summonerData[gameType + "Rank"] = `${gameName} 전적이 없어요.`;
+    summonerData[gameType + "Status"] = false;
+    return summonerData;
+  }
+  summonerData[gameType + "Rank"] =
+    gameData.tier.substring(0, 1) +
+    " " +
+    gameData.rank +
+    " " +
+    gameData.leaguePoints;
+  summonerData[gameType + "Wins"] = gameData.wins;
+  summonerData[gameType + "Loses"] = gameData.losses;
+  summonerData[gameType + "Rate"] =
+    Math.round((gameData.wins / (gameData.wins + gameData.losses)) * 100) + "%";
+  summonerData[gameType + "Status"] = true;
+
+  return summonerData;
+}
+
+function makeSummonerData(summonerData, secondResponse) {
+  const soloGameData = secondResponse.data.find(
+    (secondData) => secondData.queueType === "RANKED_SOLO_5x5"
+  );
+  setGameData(summonerData, soloGameData, "solo", "솔랭");
+
+  const flexGameData = secondResponse.data.find(
+    (secondData) => secondData.queueType === "RANKED_FLEX_SR"
+  );
+  setGameData(summonerData, flexGameData, "flex", "자랭");
+
+  return summonerData;
 }
 
 async function getSummonerMatchId(puuid) {

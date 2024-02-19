@@ -60,24 +60,24 @@ async function searchSummoner(summonerName) {
   summonerData.soloWins = profileAndRankData.soloWins;
   summonerData.soloLoses = profileAndRankData.soloLoses;
   summonerData.soloRate = profileAndRankData.soloRate;
-  summonerData.haveSoloRank = profileAndRankData.haveSoloRank;
+  summonerData.soloStatus = profileAndRankData.soloStatus;
   summonerData.flexRank = profileAndRankData.flexRank;
   summonerData.flexWins = profileAndRankData.flexWins;
   summonerData.flexLoses = profileAndRankData.flexLoses;
   summonerData.flexRate = profileAndRankData.flexRate;
-  summonerData.haveFlexRank = profileAndRankData.haveFlexRank;
+  summonerData.flexStatus = profileAndRankData.flexStatus;
 
   return summonerData;
 }
 
 function makeRankValue(summonerData) {
-  if (!summonerData.haveSoloRank && !summonerData.haveFlexRank) {
+  if (!summonerData.soloStatus && !summonerData.flexStatus) {
     return `\`소환사 레벨\`: ${summonerData.summonerLevel}\n\`솔로랭크\` : ${summonerData.soloRank} \n\`자유랭크\` : ${summonerData.flexRank}`;
   }
-  if (!summonerData.haveSoloRank) {
+  if (!summonerData.soloStatus) {
     return `\`소환사 레벨\`: ${summonerData.summonerLevel}\n\`솔로랭크\` : ${summonerData.soloRank} \n\`자유랭크\` : ${summonerData.flexRank} [승: ${summonerData.flexWins}/패: ${summonerData.flexLoses}] ${summonerData.flexRate}`;
   }
-  if (!summonerData.haveFlexRank) {
+  if (!summonerData.flexStatus) {
     return `\`소환사 레벨\`: ${summonerData.summonerLevel}\n\`솔로랭크\` : ${summonerData.soloRank} [승: ${summonerData.soloWins}/패: ${summonerData.soloLoses}] ${summonerData.soloRate} \n\`자유랭크\` : ${summonerData.flexRank}`;
   }
 
