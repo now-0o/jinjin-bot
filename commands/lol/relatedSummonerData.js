@@ -79,48 +79,6 @@ function checkSummonerName(summonerName) {
   }
 }
 
-function setCarryTag(calcScoreWithPlayerDataArry) {
-  let carrierObj = calcScoreWithPlayerDataArry[0];
-
-  const tag = {
-    일대올: 0,
-    철거반: 0,
-    갑부: 0,
-    천리안: 0,
-    보호자: 0,
-    주유소: 0,
-    봉사단: 0,
-  };
-
-  for (let i = 1; i < calcScoreWithPlayerDataArry.length; i++) {
-    let otherObj = calcScoreWithPlayerDataArry[i];
-
-    if (carrierObj[dealToChamp] > otherObj[dealToChamp]) {
-      tag[Object.keys(tag)[0]] += 1;
-    }
-
-    if (carrierObj[dealToBuild] > otherObj[dealToBuild]) {
-      tag[Object.keys(tag)[1]] += 1;
-    }
-
-    if (carrierObj[gold] > otherObj[gold]) {
-      tag[Object.keys(tag)[2]] += 1;
-    }
-
-    if (carrierObj[visionScore] > otherObj[visionScore]) {
-      tag[Object.keys(tag)[3]] += 1;
-    }
-
-    if (carrierObj[shield] > otherObj[shield]) {
-      tag[Object.keys(tag)[4]] += 1;
-    }
-
-    if (carrierObj[head] > otherObj[head]) {
-      tag[Object.keys(tag)[5]] += 1;
-    }
-  }
-}
-
 module.exports = {
   findGameMode,
   PlayerDataSetArry,
