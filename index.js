@@ -47,7 +47,7 @@ client.once("ready", async () => {
 
 client.on("guildCreate", async (guild) => {
   const guildId = guild.id;
-  checkCommands(guildId);
+  checkCommands(client, guildId);
 });
 
 client.on("interactionCreate", async (interaction) => {
