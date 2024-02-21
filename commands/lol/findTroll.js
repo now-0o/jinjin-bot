@@ -61,7 +61,7 @@ async function findTrolerInLastGame(interaction, channel) {
 async function searchTroler(summonerName) {
   try {
     const accountInfo = await getRiotAccountInfo(summonerName);
-    const finalMatchId = await getSummonerMatchId(accountInfo.puuid);
+    const finalMatchId = await getSummonerMatchId(accountInfo.puuid, 1)[0];
     const finalMatchData = await getSummonerFinalMatchData(finalMatchId);
     const gameType = findGameMode(finalMatchData.data.info.queueId);
 
