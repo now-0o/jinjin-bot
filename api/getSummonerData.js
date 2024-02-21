@@ -85,7 +85,7 @@ function makeSummonerData(summonerData, secondResponse) {
   return summonerData;
 }
 
-async function getSummonerMatchId(puuid) {
+async function getSummonerMatchId(puuid, count) {
   try {
     const response = await axios.get(
       `https://asia.api.riotgames.com/lol/match/v5/matches/by-puuid/${puuid}/ids?start=0&count=${count}&api_key=${process.env.API_KEY}`

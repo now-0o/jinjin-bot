@@ -1,4 +1,7 @@
 const Sequelize = require("sequelize");
+const cls = require("cls-hooked");
+const namespace = cls.createNamespace("sequelize-namespace");
+Sequelize.useCLS(namespace);
 
 const sequelize = new Sequelize(
   "jinjinbot",

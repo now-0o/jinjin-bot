@@ -1,9 +1,11 @@
+const sequelize = require("../../config/database");
 const { Game, Player } = require("../../models");
 const {
   getRiotAccountInfo,
   getSummonerMatchId,
   getSummonerFinalMatchData,
 } = require("../../api/getSummonerData");
+const { findGameMode, findUserTeamData } = require("./relatedSummonerData");
 
 async function insertJinjinGame(interaction, channel) {
   const insertCount = interaction.options.getInteger("게임_수");
@@ -21,12 +23,21 @@ async function insertJinjinGame(interaction, channel) {
 async function insertGameTable(matchIds) {
   for (const [index, matchId] of matchIds.entries()) {
     const gameData = await getSummonerFinalMatchData(matchId);
-    console.log(gameData.data);
-    // const savedMatchId = await Game.create({
-    //   userId: userId,
-    //   championId: championId,
-    //   createdAt: savedDatetime,
-    // });
+    const gameType = findGameMode(gameData.data.info.queueId);
+    const jinjinTeamPlayers = findUserTeamData("어쩌라고사과해#KR1", gameData);
+    const isWin = jinjinTeamPlayers[0].win;
+
+    const result = await sequelize.transaction(async () => {
+      const savedMatchId = await Game.create({
+        id: matchId,
+        type: gameType,
+        isWin,
+      });
+
+      return savedMatchId;
+    });
+
+    console.log(result);
   }
 }
 
