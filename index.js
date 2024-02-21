@@ -4,13 +4,14 @@ const Sequelize = require("sequelize");
 const { searchRecord } = require("./commands/lol/record");
 const { findCarrierInLastGame } = require("./commands/lol/findCarrier");
 const { findTrolerInLastGame } = require("./commands/lol/findTroll");
+const { insertJinjinGame } = require("./commands/lol/insertGame");
 const { setNickNameWithLevel } = require("./commands/utils/setNickName");
 const { cleanToNoRole } = require("./commands/utils/clean");
 const { checkCommands } = require("./commands/utils/checkCommand");
 const { Client, GatewayIntentBits, EmbedBuilder } = require("discord.js");
 
 const sequelize = require("./config/database");
-
+require("./models");
 sequelize.sync({
   alter: true,
 });
@@ -76,6 +77,12 @@ client.on("interactionCreate", async (interaction) => {
     await interaction.reply("레벨갱신을 완료했습니다.");
   }
   if (commandName === "매칭기록") {
+  }
+  if (
+    commandName === "매칭업데이트" &&
+    checkAdminPermission(member, interaction)
+  ) {
+    await insertJinjinGame(interaction, channel);
   }
 });
 

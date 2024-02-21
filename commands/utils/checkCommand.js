@@ -1,6 +1,6 @@
 const { setCommand } = require("./commands");
 
-function checkCommands(guildId) {
+function checkCommands(client, guildId) {
   const guild = client.guilds.cache.get(guildId);
   if (guild) {
     guild.commands
