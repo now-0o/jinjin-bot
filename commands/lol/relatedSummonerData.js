@@ -27,6 +27,9 @@ function findGameMode(queueId) {
   if (queueId === 450) {
     return "칼바람";
   }
+  if (queueId === 490) {
+    return "일반";
+  }
   if (queueId === 700) {
     return "격전";
   }

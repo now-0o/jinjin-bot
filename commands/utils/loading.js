@@ -27,4 +27,5 @@ async function sleep(ms) {
 
 module.exports = {
   sendLoading,
+  sleep,
 };
