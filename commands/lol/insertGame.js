@@ -15,6 +15,17 @@ async function insertJinjinGame(interaction, channel) {
       content: `최대 **80**건까지만 등록이 가능합니다.`,
     });
   }
+  const timeCheck = await checkLastInsertTime();
+  if (!timeCheck.success) {
+    return await interaction.reply({
+      content: `**${timeCheck.leftMinutes}**분 **${
+        (
+          await timeCheck
+        ).leftSeconds
+      }**초 후에 재등록이 가능합니다.`,
+    });
+  }
+
   await interaction.reply({
     content: `**${insertCount}**개의 게임정보 등록을 시작합니다.`,
   });
@@ -80,6 +91,48 @@ async function insertGameTable(matchIds, message, insertCount) {
   }
 
   return resultCount;
+}
+
+async function checkLastInsertTime() {
+  try {
+    const searchGameData = await Game.findOne({
+      attributes: ["createdAt"],
+      order: [["createdAt", "DESC"]],
+    });
+    if (!searchGameData) {
+      return {
+        success: true,
+      };
+    }
+    const offset = 1000 * 60 * 60 * 9;
+    const koreaNow = new Date(new Date().getTime() + offset);
+    const lastInsertTime = new Date(
+      searchGameData.dataValues.createdAt
+    ).setHours(new Date(searchGameData.dataValues.createdAt).getHours() + 9);
+
+    const calcTimeGap = koreaNow - lastInsertTime;
+    const minuteGap = Math.floor(calcTimeGap / (1000 * 60));
+    const secondGap = Math.floor(calcTimeGap / 1000);
+    console.log(minuteGap);
+    console.log(secondGap);
+    if (minuteGap < 2) {
+      const leftMinutes = 2 - minuteGap;
+      const leftSeconds = 60 - (secondGap % 60);
+
+      return {
+        success: false,
+        leftMinutes,
+        leftSeconds,
+      };
+    }
+    return {
+      success: true,
+    };
+  } catch (error) {
+    return {
+      success: false,
+    };
+  }
 }
 
 module.exports = {
