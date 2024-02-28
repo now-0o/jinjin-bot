@@ -8,6 +8,7 @@ const { insertJinjinGame } = require("./commands/lol/insertGame");
 const { setNickNameWithLevel } = require("./commands/utils/setNickName");
 const { cleanToNoRole } = require("./commands/utils/clean");
 const { checkCommands } = require("./commands/utils/checkCommand");
+const { findMatch } = require("./commands/lol/findMatch");
 const { Client, GatewayIntentBits, EmbedBuilder } = require("discord.js");
 
 const sequelize = require("./config/database");
@@ -77,6 +78,7 @@ client.on("interactionCreate", async (interaction) => {
     await interaction.reply("레벨갱신을 완료했습니다.");
   }
   if (commandName === "매칭기록") {
+    await findMatch(interaction, channel);
   }
   if (
     commandName === "매칭업데이트" &&
