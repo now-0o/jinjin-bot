@@ -47,7 +47,7 @@ async function findCarrierInLastGame(interaction, channel) {
       })
       .setTimestamp()
       .setFooter({
-        text: "League of Legends",
+        text: "Powered by JinJin",
       });
 
     channel.send({ embeds: [summonerEmbed] });

@@ -1,5 +1,7 @@
 const { Player, Game } = require("../../models");
 const { checkSummonerName } = require("./relatedSummonerData");
+const { EmbedBuilder } = require("discord.js");
+const moment = require("moment");
 
 async function findMatch(interaction, channel) {
   const summonerName = interaction.options.getString("소환사명");
@@ -16,9 +18,7 @@ async function findMatch(interaction, channel) {
   });
 
   const searchData = await findMatchThisSummoner(summonerName);
-  channel.send(
-    `등록이 완료되었습니다. - 등록건수 : ${insertResult.insert}, 기존 등록건수 : ${insertResult.skip}`
-  );
+  channel.send({ embeds: [await makeEmbed(summonerName, searchData)] });
 }
 
 async function findMatchThisSummoner(summonerName) {
@@ -26,7 +26,26 @@ async function findMatchThisSummoner(summonerName) {
     where: { account: summonerName },
     include: Game,
   });
-  console.log(gameData);
+
+  return gameData;
+}
+
+async function makeEmbed(summonerName, searchData) {
+  const summonerEmbed = new EmbedBuilder()
+    .setColor(0x0099ff)
+    .setTitle(`**${summonerName}** 매칭 기록`);
+  for (const [index, data] of searchData.entries()) {
+    if (index < 6) {
+      summonerEmbed.addFields({
+        name: `**${moment(data.dataValues.game.dataValues.date).format(
+          "YYYY-MM-DD HH:mm:ss"
+        )}** ${data.dataValues.game.dataValues.type}`,
+        value: `\`KDA\`: ${data.dataValues.kills}/${data.dataValues.deaths}/${data.dataValues.assists}\n\`CHAMP\`: ${data.dataValues.champion}`,
+      });
+    }
+  }
+
+  return summonerEmbed;
 }
 
 module.exports = {

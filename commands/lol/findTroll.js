@@ -50,7 +50,7 @@ async function findTrolerInLastGame(interaction, channel) {
       })
       .setTimestamp()
       .setFooter({
-        text: "League of Legends",
+        text: "Powered by JinJin",
       });
     channel.send({ embeds: [summonerEmbed] });
   } catch (error) {
