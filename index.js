@@ -56,7 +56,7 @@ client.on("interactionCreate", async (interaction) => {
   const channel = client.channels.cache.get(interaction.channelId);
   const { commandName, options, guildId, channelId, member } = interaction;
   const guild = client.guilds.cache.get(guildId);
-  if (!interaction.isChatInputCommand()) return;
+  if (!interaction.isChatInputCommand() && !interaction.isButton()) return;
 
   if (commandName === "청소" && checkAdminPermission(member, interaction)) {
     const channel = client.channels.cache.get(channelId);
@@ -85,6 +85,11 @@ client.on("interactionCreate", async (interaction) => {
     checkAdminPermission(member, interaction)
   ) {
     await insertJinjinGame(interaction, channel);
+  }
+  if (interaction.customId === "confirm") {
+    const clickedMessage = interaction.message;
+    const newContent = "버튼을 클릭하여 수정된 내용입니다.";
+    await clickedMessage.edit({ content: newContent });
   }
 });
 

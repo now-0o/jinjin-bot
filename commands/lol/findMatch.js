@@ -1,6 +1,11 @@
 const { Player, Game } = require("../../models");
 const { checkSummonerName } = require("./relatedSummonerData");
-const { EmbedBuilder } = require("discord.js");
+const {
+  EmbedBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  ActionRowBuilder,
+} = require("discord.js");
 const moment = require("moment");
 
 async function findMatch(interaction, channel) {
@@ -18,7 +23,8 @@ async function findMatch(interaction, channel) {
   });
 
   const searchData = await findMatchThisSummoner(summonerName);
-  channel.send({ embeds: [await makeEmbed(summonerName, searchData)] });
+
+  channel.send(await makeRepeat(summonerName, searchData));
 }
 
 async function findMatchThisSummoner(summonerName) {
@@ -30,12 +36,18 @@ async function findMatchThisSummoner(summonerName) {
   return gameData;
 }
 
-async function makeEmbed(summonerName, searchData) {
+async function makeRepeat(summonerName, searchData) {
+  if (searchData.length === 0) {
+    const summonerEmbed = new EmbedBuilder()
+      .setColor(0x0099ff)
+      .setTitle(`**${summonerName}**와 매칭된 기록이 없습니다.`);
+    return { embeds: [summonerEmbed] };
+  }
   const summonerEmbed = new EmbedBuilder()
     .setColor(0x0099ff)
     .setTitle(`**${summonerName}** 매칭 기록`);
   for (const [index, data] of searchData.entries()) {
-    if (index < 6) {
+    if (index < 5) {
       summonerEmbed.addFields({
         name: `**${moment(data.dataValues.game.dataValues.date).format(
           "YYYY-MM-DD HH:mm:ss"
@@ -44,8 +56,20 @@ async function makeEmbed(summonerName, searchData) {
       });
     }
   }
+  const button = await makeButton();
+  if (searchData.length > 5) {
+    return { embeds: [summonerEmbed], components: [button] };
+  }
+  return { embeds: [summonerEmbed] };
+}
 
-  return summonerEmbed;
+async function makeButton() {
+  const more = new ButtonBuilder()
+    .setCustomId("confirm")
+    .setLabel("더보기")
+    .setStyle(ButtonStyle.Primary);
+
+  return new ActionRowBuilder().addComponents(more);
 }
 
 module.exports = {
