@@ -24,7 +24,7 @@ async function findMatch(interaction, channel) {
 
   const searchData = await findMatchThisSummoner(summonerName);
 
-  channel.send(await makeRepeat(summonerName, searchData));
+  await makeRepeat(channel, summonerName, searchData);
 }
 
 async function findMatchThisSummoner(summonerName) {
@@ -36,31 +36,41 @@ async function findMatchThisSummoner(summonerName) {
   return gameData;
 }
 
-async function makeRepeat(summonerName, searchData) {
+async function makeRepeat(channel, summonerName, searchData) {
   if (searchData.length === 0) {
     const summonerEmbed = new EmbedBuilder()
       .setColor(0x0099ff)
       .setTitle(`**${summonerName}**와 매칭된 기록이 없습니다.`);
     return { embeds: [summonerEmbed] };
   }
-  const summonerEmbed = new EmbedBuilder()
-    .setColor(0x0099ff)
-    .setTitle(`**${summonerName}** 매칭 기록`);
   for (const [index, data] of searchData.entries()) {
     if (index < 5) {
-      summonerEmbed.addFields({
-        name: `**${moment(data.dataValues.game.dataValues.date).format(
-          "YYYY-MM-DD HH:mm:ss"
-        )}** ${data.dataValues.game.dataValues.type}`,
-        value: `\`KDA\`: ${data.dataValues.kills}/${data.dataValues.deaths}/${data.dataValues.assists}\n\`CHAMP\`: ${data.dataValues.champion}`,
-      });
+      const summonerEmbed = new EmbedBuilder()
+        .setColor(0x0099ff)
+        .setTitle(
+          `**${index + 1}. ${data.dataValues.game.isWin ? "승리" : "패배"}**`
+        )
+        .setThumbnail(
+          `https://ddragon.leagueoflegends.com/cdn/14.3.1/img/champion/${data.dataValues.champion}.png?api_key=${process.env.API_KEY}`
+        )
+        .addFields({
+          name: "게임정보",
+          value: `\`타입\` : ${
+            data.dataValues.game.dataValues.type
+          }\n\`KDA\` : ${data.dataValues.kills}/${data.dataValues.deaths}/${
+            data.dataValues.assists
+          }\n\`날짜\` : ${moment(data.dataValues.game.dataValues.date).format(
+            "YYYY-MM-DD HH:mm:ss"
+          )}`,
+          inline: true,
+        });
+      channel.send({ embeds: [summonerEmbed] });
     }
   }
   const button = await makeButton();
   if (searchData.length > 5) {
-    return { embeds: [summonerEmbed], components: [button] };
+    channel.send({ components: [button] });
   }
-  return { embeds: [summonerEmbed] };
 }
 
 async function makeButton() {
