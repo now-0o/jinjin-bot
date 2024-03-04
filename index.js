@@ -8,6 +8,7 @@ const { insertJinjinGame } = require("./commands/lol/insertGame");
 const { setNickNameWithLevel } = require("./commands/utils/setNickName");
 const { cleanToNoRole } = require("./commands/utils/clean");
 const { checkCommands } = require("./commands/utils/checkCommand");
+const { findMatch } = require("./commands/lol/findMatch");
 const { Client, GatewayIntentBits, EmbedBuilder } = require("discord.js");
 
 const sequelize = require("./config/database");
@@ -55,7 +56,7 @@ client.on("interactionCreate", async (interaction) => {
   const channel = client.channels.cache.get(interaction.channelId);
   const { commandName, options, guildId, channelId, member } = interaction;
   const guild = client.guilds.cache.get(guildId);
-  if (!interaction.isChatInputCommand()) return;
+  if (!interaction.isChatInputCommand() && !interaction.isButton()) return;
 
   if (commandName === "청소" && checkAdminPermission(member, interaction)) {
     const channel = client.channels.cache.get(channelId);
@@ -77,12 +78,18 @@ client.on("interactionCreate", async (interaction) => {
     await interaction.reply("레벨갱신을 완료했습니다.");
   }
   if (commandName === "매칭기록") {
+    await findMatch(interaction, channel);
   }
   if (
     commandName === "매칭업데이트" &&
     checkAdminPermission(member, interaction)
   ) {
     await insertJinjinGame(interaction, channel);
+  }
+  if (interaction.customId === "confirm") {
+    const clickedMessage = interaction.message;
+    const newContent = "버튼을 클릭하여 수정된 내용입니다.";
+    await clickedMessage.edit({ content: newContent });
   }
 });
 

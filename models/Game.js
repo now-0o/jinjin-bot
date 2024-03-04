@@ -12,6 +12,9 @@ const Game = sequelize.define("games", {
   isWin: {
     type: DataTypes.BOOLEAN,
   },
+  date: {
+    type: DataTypes.DATE,
+  },
 });
 
 module.exports = Game;

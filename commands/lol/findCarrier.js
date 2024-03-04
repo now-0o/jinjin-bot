@@ -47,7 +47,7 @@ async function findCarrierInLastGame(interaction, channel) {
       })
       .setTimestamp()
       .setFooter({
-        text: "League of Legends",
+        text: "Powered by JinJin",
       });
 
     channel.send({ embeds: [summonerEmbed] });
@@ -60,8 +60,8 @@ async function findCarrierInLastGame(interaction, channel) {
 async function searchCarrier(summonerName) {
   try {
     const accountInfo = await getRiotAccountInfo(summonerName);
-    const finalMatchId = await getSummonerMatchId(accountInfo.puuid, 1)[0];
-    const finalMatchData = await getSummonerFinalMatchData(finalMatchId);
+    const finalMatchId = await getSummonerMatchId(accountInfo.puuid, 1);
+    const finalMatchData = await getSummonerFinalMatchData(finalMatchId[0]);
     const gameType = findGameMode(finalMatchData.data.info.queueId);
 
     const searchedUserTeamPlayersData = findUserTeamData(

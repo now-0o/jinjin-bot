@@ -29,7 +29,9 @@ async function findTrolerInLastGame(interaction, channel) {
 
   try {
     const trolerData = await searchTroler(summonerName);
+    // 칭호 수정
     const titleString = makeTitleString(trolerData.title);
+
     const summonerEmbed = new EmbedBuilder()
       .setColor(0x0099ff)
       .setTitle(`트롤러: ${trolerData.summonerName}`)
@@ -48,9 +50,8 @@ async function findTrolerInLastGame(interaction, channel) {
       })
       .setTimestamp()
       .setFooter({
-        text: "League of Legends",
+        text: "Powered by JinJin",
       });
-
     channel.send({ embeds: [summonerEmbed] });
   } catch (error) {
     console.error("전적 조회 중 에러:", error);
@@ -61,19 +62,19 @@ async function findTrolerInLastGame(interaction, channel) {
 async function searchTroler(summonerName) {
   try {
     const accountInfo = await getRiotAccountInfo(summonerName);
-    const finalMatchId = await getSummonerMatchId(accountInfo.puuid, 1)[0];
-    const finalMatchData = await getSummonerFinalMatchData(finalMatchId);
+    const finalMatchId = await getSummonerMatchId(accountInfo.puuid, 1);
+    const finalMatchData = await getSummonerFinalMatchData(finalMatchId[0]);
     const gameType = findGameMode(finalMatchData.data.info.queueId);
 
-    const searchedUserTeamPlayersData = findUserTeamData(
+    const searchedUserTeamPlayersData = await findUserTeamData(
       summonerName,
       finalMatchData
     );
+
     const calcScoreWithPlayerDataArry = PlayerDataSetArry(
       searchedUserTeamPlayersData
     );
-    const trolerData = findTroler(calcScoreWithPlayerDataArry);
-
+    const trolerData = await findTroler(calcScoreWithPlayerDataArry);
     trolerData.gameType = gameType;
     return trolerData;
   } catch (error) {
