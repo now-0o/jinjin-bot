@@ -1,4 +1,4 @@
-![image](https://github.com/now-0o/jinjin-bot/assets/117905287/b0ad6a58-2a89-4e80-95c0-e6c18508bd9b)# :mag: 진진봇
+# :mag: 진진봇
 
 
 ### 1) 프로젝트 소개
