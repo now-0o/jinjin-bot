@@ -22,5 +22,9 @@
     "mysql2": "^3.9.1",
     "nodemon": "^3.0.2",
     "sequelize": "^6.37.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "typescript": "^5.3.3"
   }
 }

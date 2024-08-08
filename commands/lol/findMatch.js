@@ -51,7 +51,7 @@ async function makeRepeat(channel, summonerName, searchData) {
           `**${index + 1}. ${data.dataValues.game.isWin ? "승리" : "패배"}**`
         )
         .setThumbnail(
-          `https://ddragon.leagueoflegends.com/cdn/14.3.1/img/champion/${data.dataValues.champion}.png?api_key=${process.env.API_KEY}`
+          `https://ddragon.leagueoflegends.com/cdn/14.14.1/img/champion/${data.dataValues.champion}.png?api_key=${process.env.API_KEY}`
         )
         .addFields({
           name: "게임정보",

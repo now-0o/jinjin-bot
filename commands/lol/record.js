@@ -32,7 +32,7 @@ async function makeRecordEmbed(summonerName) {
       .setColor(0x0099ff)
       .setTitle(`소환사명: ${summonerName}`)
       .setThumbnail(
-        `https://ddragon.leagueoflegends.com/cdn/14.2.1/img/profileicon/${summonerData.profileIconId}.png?api_key=${process.env.API_KEY}`
+        `https://ddragon.leagueoflegends.com/cdn/14.14.1/img/profileicon/${summonerData.profileIconId}.png?api_key=${process.env.API_KEY}`
       )
       .addFields({
         name: "소환사 정보",

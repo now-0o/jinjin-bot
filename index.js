@@ -9,7 +9,12 @@ const { setNickNameWithLevel } = require("./commands/utils/setNickName");
 const { cleanToNoRole } = require("./commands/utils/clean");
 const { checkCommands } = require("./commands/utils/checkCommand");
 const { findMatch } = require("./commands/lol/findMatch");
-const { Client, GatewayIntentBits, EmbedBuilder } = require("discord.js");
+const {
+  Client,
+  GatewayIntentBits,
+  EmbedBuilder,
+  PermissionsBitField,
+} = require("discord.js");
 
 const sequelize = require("./config/database");
 require("./models");
@@ -35,16 +40,6 @@ client.once("ready", async () => {
   } else {
     console.error("Channel not found. Please check the provided channel ID.");
   }
-
-  setInterval(() => {
-    const now = new Date();
-    const midnight = new Date(now);
-    midnight.setHours(24, 0, 0, 0); // 다음날 00:00:00
-
-    setTimeout(() => {
-      cleanToNoRole(channel); // channel을 전달
-    }, midnight - now);
-  }, 24 * 60 * 60 * 1000); // 24시간 주기로 실행
 });
 
 client.on("guildCreate", async (guild) => {
@@ -58,7 +53,10 @@ client.on("interactionCreate", async (interaction) => {
   const guild = client.guilds.cache.get(guildId);
   if (!interaction.isChatInputCommand() && !interaction.isButton()) return;
 
-  if (commandName === "청소" && checkAdminPermission(member, interaction)) {
+  if (
+    commandName === "청소" &&
+    (await checkAdminPermission(member, interaction))
+  ) {
     const channel = client.channels.cache.get(channelId);
     await interaction.reply("청소 시작!");
     await cleanToNoRole(guild, channel);
@@ -72,7 +70,10 @@ client.on("interactionCreate", async (interaction) => {
   if (interaction.commandName === "전판트롤") {
     findTrolerInLastGame(interaction, channel);
   }
-  if (commandName === "레벨갱신" && checkAdminPermission(member, interaction)) {
+  if (
+    commandName === "레벨갱신" &&
+    (await checkAdminPermission(member, interaction))
+  ) {
     await setNickNameWithLevel(client, guild);
 
     await interaction.reply("레벨갱신을 완료했습니다.");
@@ -82,7 +83,7 @@ client.on("interactionCreate", async (interaction) => {
   }
   if (
     commandName === "매칭업데이트" &&
-    checkAdminPermission(member, interaction)
+    (await checkAdminPermission(member, interaction))
   ) {
     await insertJinjinGame(interaction, channel);
   }
@@ -94,14 +95,16 @@ client.on("interactionCreate", async (interaction) => {
 });
 
 async function checkAdminPermission(member, interaction) {
-  const isAdmin = member.permissions.has("ADMINISTRATOR");
+  const isAdmin = member.permissions.has(
+    PermissionsBitField.Flags.Administrator
+  );
 
   if (!isAdmin) {
     await interaction.reply("권한이 없습니다.");
-    return false; // 혹은 다른 처리를 수행할 수 있습니다.
+    return false;
   }
 
-  return true; // 권한이 있을 경우에는 true 반환
+  return true;
 }
 
 client.login(process.env.TOKEN);

@@ -29,11 +29,14 @@ async function findCarrierInLastGame(interaction, channel) {
   try {
     const carrierData = await searchCarrier(summonerName);
     const titleString = makeTitleString(carrierData.title);
+    console.log(
+      `https://ddragon.leagueoflegends.com/cdn/14.14.1/img/champion/${carrierData.championName}.png?api_key=${process.env.API_KEY}`
+    );
     const summonerEmbed = new EmbedBuilder()
       .setColor(0x0099ff)
       .setTitle(`캐리머신: ${carrierData.summonerName}`)
       .setThumbnail(
-        `https://ddragon.leagueoflegends.com/cdn/14.2.1/img/champion/${carrierData.championName}.png?api_key=${process.env.API_KEY}`
+        `https://ddragon.leagueoflegends.com/cdn/14.14.1/img/champion/${carrierData.championName}.png?api_key=${process.env.API_KEY}`
       )
       .addFields({
         name: "플레이정보",

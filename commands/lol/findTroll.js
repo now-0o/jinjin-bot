@@ -36,7 +36,7 @@ async function findTrolerInLastGame(interaction, channel) {
       .setColor(0x0099ff)
       .setTitle(`트롤러: ${trolerData.summonerName}`)
       .setThumbnail(
-        `https://ddragon.leagueoflegends.com/cdn/14.3.1/img/champion/${trolerData.championName}.png?api_key=${process.env.API_KEY}`
+        `https://ddragon.leagueoflegends.com/cdn/14.14.1/img/champion/${trolerData.championName}.png?api_key=${process.env.API_KEY}`
       )
       .addFields({
         name: "플레이정보",
